@@ -37,7 +37,7 @@ interface LinhaPlanilha {
 interface Planilha {
   id: number;
   nome: string;
-  arquivo: File;
+  arquivo: File | null;
 }
 
 interface Tomador {
@@ -305,7 +305,11 @@ function gerarRegistro9999(linhas: string[]) {
   linhas.push(`|9999|${linhas.length + 1}|`);
 }
 
-function gerarSpedDePlanilha(file: File, onFinish?: () => void) {
+function gerarSpedDePlanilha(file: File | null, onFinish?: () => void) {
+  if(!file) {
+    return
+  }
+  
   const reader = new FileReader();
 
   reader.onload = (e) => {
