@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react'
 interface Planilha {
   id: number
   nome: string
-  arquivo: File | null
+  arquivo: File
 }
 
 export function usePlanilhas() {
