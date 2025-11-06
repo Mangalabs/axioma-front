@@ -7,7 +7,6 @@ interface LinhaPlanilha {
   "CNPJ / Série SAT": string;
   "Razão Social": string;
   Empresa: string;
-  "Simples Nacional": string;
   "Nome do Serviço": string;
   "Nota Fiscal": string;
   "Data Emissão": string;
@@ -27,10 +26,10 @@ interface LinhaPlanilha {
   "Periodo Fim": string;
   UF: string;
   Cidade: string;
-  CEP: string | number;
-  Telefone: string | number;
+  CEP: string;
+  Telefone: string;
   "Código de Serviço": string;
-  CC: string | number;
+  CC: string;
   "Regime de Lucro": string;
 }
 
@@ -219,6 +218,7 @@ function gerarRegistroA100(linhas: string[], row: LinhaPlanilha) {
   const numero = row["Nota Fiscal"];
   const CC = row["CC"];
   const emissao = parseDate(row["Data Emissão"]);
+  const codigoDeServico = row["Código de Serviço"]
 
   const PIS = row.PIS ? parseFloat(row.PIS).toFixed(2).replace(".", ",") : 0;
   const COFINS = row.COFINS
@@ -253,7 +253,7 @@ function gerarRegistroA100(linhas: string[], row: LinhaPlanilha) {
       .padStart(
         14,
         "0"
-      )}|00|||${numero}||${emissao}|${emissao}|${ValorTotal}||${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|||${ISS}|||||||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}|||||${junta_darf}|${cod_darf}|`
+      )}|00|||${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}|||||${junta_darf}|${cod_darf}|`
   );
 }
 
