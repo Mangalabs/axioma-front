@@ -1,6 +1,6 @@
 import PlanilhasList from "./components/PlanilhasList";
 import { usePlanilhas } from "./hooks/usePlanilhas";
-import { read, utils } from "xlsx";
+import { read, utils, type WorkSheet } from "xlsx";
 import { saveAs } from "file-saver";
 
 interface LinhaPlanilha {
@@ -56,18 +56,16 @@ interface Participante {
   cpfCnpj: string;
 }
 
-function recuperaTomador(rows: LinhaPlanilha[]): Tomador {
+function recuperaTomador(sheet: WorkSheet): Tomador {
   return {
-    cnpj: String(rows[0]["CNPJ Tomador"])
-      .replace(/[^\d]/g, "")
-      .padStart(14, "0"),
-    razao: rows[0]["Razão Social Tomador"],
-    uf: rows[0]["UF"],
-    cidade: rows[0]["Cidade"],
-    cep: rows[0]["CEP"].toString(),
-    tel: rows[0]["Telefone"].toString(),
-    periodoInicio: rows[0]["Periodo Inicio"].split("/").join(""),
-    periodoFim: rows[0]["Periodo Fim"].split("/").join(""),
+    cnpj: String(sheet.B3.w).replace(/[^\d]/g, "").padStart(14, "0"),
+    razao: sheet.B4.w,
+    uf: sheet.D3.w,
+    cidade: sheet.D4.w,
+    cep: sheet.D5.w,
+    tel: sheet.D6.w,
+    periodoInicio: new Date(sheet.B5.w).toLocaleDateString("pt-BR").split("/").join(""),
+    periodoFim: new Date(sheet.B6.w).toLocaleDateString("pt-BR").split("/").join(""),
   };
 }
 
@@ -218,7 +216,7 @@ function gerarRegistroA100(linhas: string[], row: LinhaPlanilha) {
   const numero = row["Nota Fiscal"];
   const CC = row["CC"];
   const emissao = parseDate(row["Data Emissão"]);
-  const codigoDeServico = row["Código de Serviço"]
+  const codigoDeServico = row["Código de Serviço"];
 
   const PIS = row.PIS ? parseFloat(row.PIS).toFixed(2).replace(".", ",") : 0;
   const COFINS = row.COFINS
@@ -306,15 +304,17 @@ function gerarRegistro9999(linhas: string[]) {
 }
 
 function gerarSpedDePlanilha(file: File | null, onFinish?: () => void) {
-  if(!file) {
-    return
+  if (!file) {
+    return;
   }
-  
+
   const reader = new FileReader();
 
   reader.onload = (e) => {
     const data = new Uint8Array(e.target?.result as ArrayBuffer);
     const workbook = read(data, { type: "array" });
+
+    const sheetTomador = workbook.Sheets["dados da empresa"];
 
     const sheet = workbook.Sheets["principal"];
     if (!sheet) {
@@ -333,7 +333,7 @@ function gerarSpedDePlanilha(file: File | null, onFinish?: () => void) {
 
     formatAllDatesFromExceltoString(rows);
 
-    const tomador = recuperaTomador(rows);
+    const tomador = recuperaTomador(sheetTomador);
 
     const linhas: string[] = [];
 
