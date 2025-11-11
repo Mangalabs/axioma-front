@@ -48,6 +48,7 @@ interface Tomador {
   tel: string;
   periodoInicio: string;
   periodoFim: string;
+  regimeDeLucro: string;
 }
 
 interface Participante {
@@ -64,8 +65,15 @@ function recuperaTomador(sheet: WorkSheet): Tomador {
     cidade: sheet.D4.w,
     cep: sheet.D5.w,
     tel: sheet.D6.w,
-    periodoInicio: new Date(sheet.B5.w).toLocaleDateString("pt-BR").split("/").join(""),
-    periodoFim: new Date(sheet.B6.w).toLocaleDateString("pt-BR").split("/").join(""),
+    periodoInicio: new Date(sheet.B5.w)
+      .toLocaleDateString("pt-BR")
+      .split("/")
+      .join(""),
+    periodoFim: new Date(sheet.B6.w)
+      .toLocaleDateString("pt-BR")
+      .split("/")
+      .join(""),
+    regimeDeLucro: sheet.B7.w,
   };
 }
 
@@ -212,7 +220,11 @@ function gerarRegistro9990(linhas: string[]) {
   linhas.push(`|9990|${linhas.length}|`);
 }
 
-function gerarRegistroA100(linhas: string[], row: LinhaPlanilha) {
+function gerarRegistroA100(
+  linhas: string[],
+  row: LinhaPlanilha,
+  tomador: Tomador
+) {
   const numero = row["Nota Fiscal"];
   const CC = row["CC"];
   const emissao = parseDate(row["Data Emissão"]);
@@ -233,10 +245,19 @@ function gerarRegistroA100(linhas: string[], row: LinhaPlanilha) {
     ? parseFloat(row["Valor Desconto"]).toFixed(2).replace(".", ",")
     : 0;
 
-  const geraCredito = row["Regime de Lucro"] === "Lucro Real" ? 1 : 0;
+  const geraCredito = tomador.regimeDeLucro === "Lucro Real" ? 1 : 0;
 
-  const junta_darf = IRRF ? 1 : 0;
-  const cod_darf = junta_darf ? 1 : "";
+  const junta_darf = PIS || COFINS || CSLL ? 1 : 0;
+  const cod_darf = () => {
+    console.log((PIS || COFINS || CSLL) && !IRRF);
+    if (!(PIS || COFINS || CSLL) && IRRF) {
+      return 1;
+    } else if ((PIS || COFINS || CSLL) && IRRF) {
+      return 2;
+    } else {
+      return 3;
+    }
+  };
 
   const valorTotalPIS = row.PIS
     ? parseFloat(row.PIS) - parseFloat(row["Valor Desconto"])
@@ -245,40 +266,57 @@ function gerarRegistroA100(linhas: string[], row: LinhaPlanilha) {
     ? parseFloat(row.COFINS) - parseFloat(row["Valor Desconto"])
     : 0;
 
+  const haRetencao = PIS || COFINS || CSLL ? 1 : 0;
+
   linhas.push(
     `|A100|0|1|${String(row["CNPJ / Série SAT"])
       .replace(/[^\d]/g, "")
       .padStart(
         14,
         "0"
-      )}|00|||${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}|||||${junta_darf}|${cod_darf}|`
+      )}|00||1|${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}||${haRetencao}|||${junta_darf}|${cod_darf()}|`
   );
 }
 
 function gerarRegistroA170(
   linhas: string[],
   row: LinhaPlanilha,
-  index: number
+  tomador: Tomador
 ) {
+  const ehLucroReal = tomador.regimeDeLucro === "Lucro Real";
   const PIS = row.PIS ? parseFloat(row.PIS).toFixed(2).replace(".", ",") : 0;
-  const COFINS = row.COFINS
-    ? parseFloat(row.COFINS).toFixed(2).replace(".", ",")
-    : 0;
-  const CSLL = row.CSLL ? parseFloat(row.CSLL).toFixed(2).replace(".", ",") : 0;
-  const IRRF = row.IRRF ? parseFloat(row.IRRF).toFixed(2).replace(".", ",") : 0;
-  const INSS = row.INSS ? parseFloat(row.INSS).toFixed(2).replace(".", ",") : 0;
-  const ISS = row.ISS ? parseFloat(row.ISS).toFixed(2).replace(".", ",") : 0;
   const ValorTotal = row["Valor Total"]
     ? parseFloat(row["Valor Total"]).toFixed(2).replace(".", ",")
     : 0;
-  const ValorLiquido = row["Valor Líquido"]
-    ? parseFloat(row["Valor Líquido"]).toFixed(2).replace(".", ",")
-    : 0;
+
+  const valorPis = () => {
+    if (!row["Valor Total"] || !ehLucroReal) {
+      return "";
+    }
+
+    return (parseFloat(row["Valor Total"]) * (1.65 / 100))
+      .toFixed(2)
+      .replace(".", ",");
+  };
+
+  const valorCofins = () => {
+    if (!row["Valor Total"] || !ehLucroReal) {
+      return "";
+    }
+
+    return (parseFloat(row["Valor Total"]) * (7.6 / 100))
+      .toFixed(2)
+      .replace(".", ",");
+  };
+
+  const CST = ehLucroReal ? 50 : "";
+  const aliquotaPis = ehLucroReal ? "1,65" : "";
+  const aliquotaCofins = ehLucroReal ? "7,6" : "";
 
   linhas.push(
-    `|A170|${index + 1}|${row["Código de Serviço"]}|${
+    `|A170|1|${row["Código de Serviço"]}|${
       row["Nome do Serviço"]
-    }|${ValorTotal}|${PIS}|${COFINS}|${CSLL}|${IRRF}|${INSS}|${ISS}|0|0|${ValorLiquido}|`
+    }|${ValorTotal}|${PIS}|13|0|${CST}||${ValorTotal}|${aliquotaPis}|${valorPis()}|${CST}||${ValorTotal}|${aliquotaCofins}|${valorCofins()}|`
   );
 }
 
@@ -290,11 +328,15 @@ function gerarRegistroA990(linhas: string[]) {
   linhas.push(`|A990|${totalBlocoA}|`);
 }
 
-function gerarBlocoA(linhas: string[], rows: LinhaPlanilha[]) {
+function gerarBlocoA(
+  linhas: string[],
+  rows: LinhaPlanilha[],
+  tomador: Tomador
+) {
   linhas.push(`|A001|0|`);
-  rows.forEach((row, index) => {
-    gerarRegistroA100(linhas, row);
-    gerarRegistroA170(linhas, row, index);
+  rows.forEach((row) => {
+    gerarRegistroA100(linhas, row, tomador);
+    gerarRegistroA170(linhas, row, tomador);
   });
   gerarRegistroA990(linhas);
 }
@@ -345,7 +387,7 @@ function gerarSpedDePlanilha(file: File | null, onFinish?: () => void) {
     gerarRegistro0190(linhas);
     gerarBloco200(linhas, rows);
     gerarRegistro9990(linhas);
-    gerarBlocoA(linhas, rows);
+    gerarBlocoA(linhas, rows, tomador);
     gerarRegistro9999(linhas);
 
     const blob = new Blob([linhas.join("\n")], {
