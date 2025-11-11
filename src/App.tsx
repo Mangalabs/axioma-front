@@ -249,7 +249,6 @@ function gerarRegistroA100(
 
   const junta_darf = PIS || COFINS || CSLL ? 1 : 0;
   const cod_darf = () => {
-    console.log((PIS || COFINS || CSLL) && !IRRF);
     if (!(PIS || COFINS || CSLL) && IRRF) {
       return 1;
     } else if ((PIS || COFINS || CSLL) && IRRF) {
