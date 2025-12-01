@@ -267,13 +267,15 @@ function gerarRegistroA100(
 
   const haRetencao = PIS || COFINS || CSLL ? 1 : 0;
 
+  const CNPJ = String(row["CNPJ / Série SAT"])
+  .replace(/[^\d]/g, "")
+  .padStart(
+    14,
+    "0"
+  )
+
   linhas.push(
-    `|A100|0|1|${String(row["CNPJ / Série SAT"])
-      .replace(/[^\d]/g, "")
-      .padStart(
-        14,
-        "0"
-      )}|00||1|${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}||${haRetencao}|||${junta_darf}|${cod_darf()}|`
+    `|A100|0|1|${CNPJ}|00||1|${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}||${haRetencao}|${cod_darf()}|`
   );
 }
 
