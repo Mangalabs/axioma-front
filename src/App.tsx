@@ -247,7 +247,6 @@ function gerarRegistroA100(
 
   const geraCredito = tomador.regimeDeLucro === "Lucro Real" ? 1 : 0;
 
-  const junta_darf = PIS || COFINS || CSLL ? 1 : 0;
   const cod_darf = () => {
     if (!(PIS || COFINS || CSLL) && IRRF) {
       return 1;
@@ -275,7 +274,7 @@ function gerarRegistroA100(
   )
 
   linhas.push(
-    `|A100|0|1|${CNPJ}|00||1|${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}||${haRetencao}|${cod_darf()}|`
+    `|A100|0|1|${CNPJ}|00|1||${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}||${haRetencao}|${cod_darf()}|`
   );
 }
 
