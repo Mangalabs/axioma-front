@@ -290,7 +290,6 @@ function gerarRegistroA170(
   tomador: Tomador
 ) {
   const ehLucroReal = tomador.regimeDeLucro === "Lucro Real";
-  const PIS = row.PIS ? parseFloat(row.PIS).toFixed(2).replace(".", ",") : 0;
   const ValorTotal = row["Valor Total"]
     ? parseFloat(row["Valor Total"]).toFixed(2).replace(".", ",")
     : 0;
@@ -322,7 +321,7 @@ function gerarRegistroA170(
   linhas.push(
     `|A170|1|${row["Código de Serviço"]}|${
       row["Nome do Serviço"]
-    }|${ValorTotal}|${PIS}|13|0|${CST}||${ValorTotal}|${aliquotaPis}|${valorPis()}|${CST}||${ValorTotal}|${aliquotaCofins}|${valorCofins()}|`
+    }|${ValorTotal}|0|13|0|${CST}||${ValorTotal}|${aliquotaPis}|${valorPis()}|${CST}||${ValorTotal}|${aliquotaCofins}|${valorCofins()}|`
   );
 }
 
