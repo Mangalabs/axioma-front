@@ -247,7 +247,13 @@ function gerarRegistroA100(
 
   const geraCredito = tomador.regimeDeLucro === "Lucro Real" ? 1 : 0;
 
-  const cod_darf = () => {
+  const haRetencao = PIS || COFINS || CSLL ? 1 : 2;
+
+  const codDarf = () => {
+    if (haRetencao === 2) {
+      return ""
+    }
+
     if (!PIS && !COFINS && !CSLL && IRRF) {
       return 1;
     } else if (PIS && COFINS && CSLL && IRRF) {
@@ -264,8 +270,6 @@ function gerarRegistroA100(
     ? parseFloat(row.COFINS) - parseFloat(row["Valor Desconto"])
     : 0;
 
-  const haRetencao = PIS || COFINS || CSLL ? 1 : 2;
-
   const CNPJ = String(row["CNPJ / Série SAT"])
   .replace(/[^\d]/g, "")
   .padStart(
@@ -273,8 +277,10 @@ function gerarRegistroA100(
     "0"
   )
 
+  const baseDeCalculo = parseFloat(row["Valor Total"]) - parseFloat(row["Valor Desconto"])
+
   linhas.push(
-    `|A100|0|1|${CNPJ}|00|1||${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${PIS}|${valorTotalPIS}|${COFINS}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}||${haRetencao}|${cod_darf()}|`
+    `|A100|0|1|${CNPJ}|00|1||${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${baseDeCalculo}|${valorTotalPIS}|${baseDeCalculo}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}||${haRetencao}|${codDarf()}|`
   );
 }
 
