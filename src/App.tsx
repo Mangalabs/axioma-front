@@ -257,7 +257,7 @@ function gerarRegistroA100(
     if (!PIS && !COFINS && !CSLL && IRRF) {
       return 1;
     } else if (PIS && COFINS && CSLL && IRRF) {
-      return 2;
+      return 1;
     } else {
       return 3;
     }
