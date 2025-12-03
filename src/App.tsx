@@ -4,7 +4,7 @@ import { read, utils, type WorkSheet } from "xlsx";
 import { saveAs } from "file-saver";
 
 interface LinhaPlanilha {
-  "CNPJ": string;
+  CNPJ: string;
   "Razão Social": string;
   Empresa: string;
   "Nome do Serviço": string;
@@ -251,7 +251,7 @@ function gerarRegistroA100(
 
   const codDarf = () => {
     if (haRetencao === 2) {
-      return ""
+      return "";
     }
 
     if (!PIS && !COFINS && !CSLL && IRRF) {
@@ -270,14 +270,14 @@ function gerarRegistroA100(
     ? parseFloat(row.COFINS) - parseFloat(row["Valor Desconto"])
     : 0;
 
-  const CNPJ = String(row["CNPJ"])
-  .replace(/[^\d]/g, "")
-  .padStart(
-    14,
-    "0"
-  )
+  const CNPJ = String(row["CNPJ"]).replace(/[^\d]/g, "").padStart(14, "0");
 
-  const baseDeCalculo = parseFloat(row["Valor Total"]) - parseFloat(row["Valor Desconto"])
+  const baseDeCalculo = (
+    (row["Valor Total"] ? parseFloat(row["Valor Total"]) : 0) -
+    (row["Valor Desconto"] ? parseFloat(row["Valor Desconto"]) : 0)
+  )
+    .toFixed(2)
+    .replace(".", ",");
 
   linhas.push(
     `|A100|0|1|${CNPJ}|00|1||${numero}||${emissao}|${emissao}|${ValorTotal}|0|${ValorDesconto}|${baseDeCalculo}|${valorTotalPIS}|${baseDeCalculo}|${valorTotalCOFINS}|${PIS}|${COFINS}|${ISS}|||||${codigoDeServico}||NFSE||${CC}|||||||${IRRF}|${CSLL}|${INSS}|||||${geraCredito}||${haRetencao}|${codDarf()}|`
@@ -368,7 +368,7 @@ function gerarSpedDePlanilha(file: File | null, onFinish?: () => void) {
       alert(`A planilha ${file.name} não possui aba "principal"`);
       return;
     }
-    
+
     const rows = utils.sheet_to_json<LinhaPlanilha>(sheet).filter((row) => {
       return row["Nota Fiscal"] && row["CNPJ"];
     });
