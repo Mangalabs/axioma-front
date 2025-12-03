@@ -4,7 +4,7 @@ import { read, utils, type WorkSheet } from "xlsx";
 import { saveAs } from "file-saver";
 
 interface LinhaPlanilha {
-  "CNPJ / Série SAT": string;
+  "CNPJ": string;
   "Razão Social": string;
   Empresa: string;
   "Nome do Serviço": string;
@@ -96,7 +96,7 @@ function recuperaParticipantes(rows: LinhaPlanilha[]) {
   } = {};
 
   rows.forEach((row) => {
-    const cnpjParticipante = String(row["CNPJ / Série SAT"])
+    const cnpjParticipante = String(row["CNPJ"])
       .replace(/[^\d]/g, "")
       .padStart(14, "0");
     const codPart = cnpjParticipante;
@@ -270,7 +270,7 @@ function gerarRegistroA100(
     ? parseFloat(row.COFINS) - parseFloat(row["Valor Desconto"])
     : 0;
 
-  const CNPJ = String(row["CNPJ / Série SAT"])
+  const CNPJ = String(row["CNPJ"])
   .replace(/[^\d]/g, "")
   .padStart(
     14,
@@ -368,9 +368,9 @@ function gerarSpedDePlanilha(file: File | null, onFinish?: () => void) {
       alert(`A planilha ${file.name} não possui aba "principal"`);
       return;
     }
-
+    
     const rows = utils.sheet_to_json<LinhaPlanilha>(sheet).filter((row) => {
-      return row["Nota Fiscal"] && row["CNPJ / Série SAT"];
+      return row["Nota Fiscal"] && row["CNPJ"];
     });
 
     if (rows.length === 0) {
