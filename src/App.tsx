@@ -245,7 +245,7 @@ function gerarRegistroA100(
     ? parseFloat(row["Valor Desconto"]).toFixed(2).replace(".", ",")
     : 0;
 
-  const geraCredito = tomador.regimeDeLucro === "Lucro Real" ? 1 : 0;
+  const geraCredito = tomador.regimeDeLucro === "LUCRO REAL" ? 1 : 0;
 
   const haRetencao = PIS || COFINS || CSLL ? 1 : 2;
 
