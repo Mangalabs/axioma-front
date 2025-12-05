@@ -289,7 +289,9 @@ function gerarRegistroA170(
   row: LinhaPlanilha,
   tomador: Tomador
 ) {
-  const ehLucroReal = tomador.regimeDeLucro === "Lucro Real";
+  const codigoServico = row["Código de Serviço"];
+  const nomeServico = row["Nome do Serviço"];
+  const ehLucroReal = tomador.regimeDeLucro === "LUCRO REAL";
   const ValorTotal = row["Valor Total"]
     ? parseFloat(row["Valor Total"]).toFixed(2).replace(".", ",")
     : 0;
@@ -319,9 +321,7 @@ function gerarRegistroA170(
   const aliquotaCofins = ehLucroReal ? "7,6" : "";
 
   linhas.push(
-    `|A170|1|${row["Código de Serviço"]}|${
-      row["Nome do Serviço"]
-    }|${ValorTotal}|0|13|0|${CST}||${ValorTotal}|${aliquotaPis}|${valorPis()}|${CST}||${ValorTotal}|${aliquotaCofins}|${valorCofins()}|`
+    `|A170|1|${codigoServico}|${nomeServico}|${ValorTotal}|0|13|0|${CST}||${ValorTotal}|${aliquotaPis}|${valorPis()}|${CST}||${ValorTotal}|${aliquotaCofins}|${valorCofins()}|`
   );
 }
 
