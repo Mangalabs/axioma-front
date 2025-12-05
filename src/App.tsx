@@ -245,7 +245,7 @@ function gerarRegistroA100(
     ? parseFloat(row["Valor Desconto"]).toFixed(2).replace(".", ",")
     : 0;
 
-  const geraCredito = tomador.regimeDeLucro === "LUCRO REAL" ? 1 : 0;
+  const geraCredito = tomador.regimeDeLucro.toLowerCase() === "lucro real" ? 1 : 0;
 
   const haRetencao = PIS || COFINS || CSLL ? 1 : 2;
 
@@ -291,7 +291,7 @@ function gerarRegistroA170(
 ) {
   const codigoServico = row["Código de Serviço"];
   const nomeServico = row["Nome do Serviço"];
-  const ehLucroReal = tomador.regimeDeLucro === "LUCRO REAL";
+  const ehLucroReal = tomador.regimeDeLucro.toLowerCase() === "lucro real";
   const ValorTotal = row["Valor Total"]
     ? parseFloat(row["Valor Total"]).toFixed(2).replace(".", ",")
     : 0;
